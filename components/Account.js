@@ -3,12 +3,16 @@ import { useUser, useSupabaseClient } from '@supabase/auth-helpers-react'
 import Avatar from './Avatar'
 
 export default function Account({ session }) {
+
+
   const supabase = useSupabaseClient()
   const user = useUser()
   const [loading, setLoading] = useState(true)
   const [username, setUsername] = useState(null)
   const [website, setWebsite] = useState(null)
   const [avatar_url, setAvatarUrl] = useState(null)
+  const [weight, setWeight] = useState(null)
+  const [goalweight, setGoalWeight] = useState(null)
 
   useEffect(() => {
     getProfile()
@@ -20,7 +24,7 @@ export default function Account({ session }) {
 
       let { data, error, status } = await supabase
         .from('profiles')
-        .select(`username, website, avatar_url`)
+        .select(`username, website, avatar_url, weight, goalweight`)
         .eq('id', user.id)
         .single()
 
@@ -32,6 +36,8 @@ export default function Account({ session }) {
         setUsername(data.username)
         setWebsite(data.website)
         setAvatarUrl(data.avatar_url)
+        setWeight(data.weight)
+        setGoalWeight(data.goalweight)
       }
     } catch (error) {
       alert('Error loading user data!')
@@ -41,7 +47,7 @@ export default function Account({ session }) {
     }
   }
 
-  async function updateProfile({ username, website, avatar_url }) {
+  async function updateProfile({ username, website, avatar_url, weight, goalweight }) {
     try {
       setLoading(true)
 
@@ -50,6 +56,8 @@ export default function Account({ session }) {
         username,
         website,
         avatar_url,
+        weight,
+        goalweight,
         updated_at: new Date().toISOString(),
       }
 
@@ -63,6 +71,8 @@ export default function Account({ session }) {
       setLoading(false)
     }
   }
+
+  const goal = weight - goalweight;
 
   return (
     
@@ -93,7 +103,7 @@ export default function Account({ session }) {
           onChange={(e) => setUsername(e.target.value)}
         />
       </div>
-      <div>
+      {/* <div>
         <label htmlFor="website">Website</label>
         <input
           id="website"
@@ -101,12 +111,30 @@ export default function Account({ session }) {
           value={website || ''}
           onChange={(e) => setWebsite(e.target.value)}
         />
+      </div> */}
+      <div>
+        <label htmlFor="weight">Weight</label>
+        <input
+          id="weight"
+          type="weight"
+          value={weight || ''}
+          onChange={(e) => setWeight(e.target.value)}
+        />
+      </div>
+      <div>
+        <label htmlFor="goalweight">Goal Weight. You still need to lose {goal} more pounds! You got this!</label>
+        <input
+          id="goalweight"
+          type="goalweight"
+          value={goalweight || ''}
+          onChange={(e) => setGoalWeight(e.target.value)}
+        />
       </div>
 
       <div>
         <button
           className="button primary block"
-          onClick={() => updateProfile({ username, website, avatar_url })}
+          onClick={() => updateProfile({ username, website, avatar_url, weight, goalweight })}
           disabled={loading}
         >
           {loading ? 'Loading ...' : 'Update'}
